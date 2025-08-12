@@ -1,4 +1,4 @@
-Introduction  介绍
+## Introduction  介绍
 In recent years, multi-modal foundation models have become a groundbreaking advancement in artificial intelligence, enabling a single model to process and understand diverse data types like text, images, and even speech. These models hold immense potential for applications ranging from content creation and image generation to complex cross-modal translation tasks, where AI can interpret and generate information across different formats. However, as promising as these capabilities are, training large multi-modal models poses significant computational and scalability challenges. Unlike single-modality models, which are trained on a single data type, multi-modal models require massive datasets and an immense amount of computational power to handle the varying structures and features of different modalities.
 近年来，多模态基础模型已成为人工智能的突破性进步，使单个模型能够处理和理解文本、图像甚至语音等多种数据类型。这些模型在从内容创建和图像生成到复杂的跨模式翻译任务等应用方面具有巨大的潜力，人工智能可以解释和生成不同格式的信息。然而，尽管这些功能很有前途，但训练大型多模态模型带来了重大的计算和可扩展性挑战。与在单一数据类型上训练的单模态模型不同，多模态模型需要海量数据集和巨大的计算能力来处理不同模态的不同结构和特征。
 
