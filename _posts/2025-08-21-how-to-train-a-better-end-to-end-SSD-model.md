@@ -1,19 +1,15 @@
-# How to Train a Better End-to-End Speaker Speech Segmentation Model
 ## Background and Research Motivation
 Since 2019, the entire field of End-to-End Neural Diarization (EEND) research has treated speaker segmentation as a frame-level multi-label classification problem based on permutation-invariant training. Although EEND has shown great potential, recent studies have explored the combination of (local) supervised EEND segmentation and (global) unsupervised clustering. The loss function has shifted from multi-label classification (where any two speakers can be active simultaneously) to power set multi-class classification (where dedicated categories are assigned to overlapping speaker pairs). The new loss function significantly improves performance (mainly in overlapping speech) and robustness to domain mismatch, while eliminating the detection threshold hyperparameter that is crucial in the multi-label formulation.
 
 Transforming speaker speech segmentation from "multi-label classification" to "power set multi-class classification" enables:
 1. A significant improvement in **overlapping speech processing accuracy** (reduction of the main error source);
 2. Enhanced **robustness to domain mismatch** (elimination of the sensitive threshold θ);
-- Open-source code: https://github.com/niuzb/wav2vec2_ssd
 - Open-source model: https://huggingface.co/niuzb/wav2vec2-ssd
 - Methodology: Verified that "short-block processing + power set classification" can solve the "class explosion" problem of traditional power set methods, providing a paradigm for subsequent research.
 
 ### What is Speaker Diarization?
 It segments an audio stream into temporally continuous homogeneous segments based on "speaker identity" (e.g., "0-5s: Speaker A", "5-12s: Speaker B", "12-18s: Overlap of A and B").
 
-### Limitations of Existing Methods
-The paper first summarizes the shortcomings of two mainstream method categories to lay the groundwork for subsequent innovations:
 
 #### Traditional Multi-Stage Methods (Classic Framework)
 Workflow: Voice Activity Detection (VAD) -> Speaker Embedding (extracting discriminative features) -> Unsupervised Clustering (grouping by embeddings).  
@@ -105,7 +101,7 @@ The loss functions for face recognition models have gone through multiple develo
 2. **Center Loss**: Proposed in 2016, it adds a term to the Softmax Loss that pulls samples of the same class closer to the center. It sets a center for each class and minimizes intra-class distances while ensuring classification. However, it has no classification function itself and must be used in conjunction with Softmax Loss. The center is initialized with random values and is updated in real-time with the learned features. When calculating the center loss for each class, it is divided by the number of samples in that class to compute the mean, preventing unbalanced samples from causing asynchronous gradient updates across different classes. In face recognition, the empirical value of the parameter is generally set to 0.003. It has issues such as unsatisfactory intra-class distance optimization, high hardware requirements when there are many classes, difficulty in optimizing outliers with L2 norm, and applicability only to data with small differences between samples of the same class.
 3. **Triplet Loss**: A triplet loss function composed of Anchor, Negative, and Positive samples. It optimizes the model by minimizing the distance between Anchor and Positive (reducing intra-class distance) and maximizing the distance between Anchor and Negative (increasing inter-class distance). Before Center Loss, it was a commonly used loss function in face recognition. However, as the number of samples increases, the number of sample pair combinations grows exponentially, resulting in severe training time consumption.
 4. **L-Softmax Loss**: Adjusts Softmax Loss by converting convolution operations into vector products and changing \(cosθ\) to \(cos(mθ)\) (where \(m>1\)). This increases the decision margin, raises the learning difficulty, thereby compressing intra-class distances and expanding inter-class distances.
-5. **SphereFace (A-Softmax Loss)**: Proposed in 2017, it normalizes weights (\(||W|| = 1\)) based on L-Softmax Loss, mapping points on features to a unit hypersphere. The model's predictions depend only on the angle between \(W\) and \(X\). It proposes angular margin penalty, focusing training more on optimizing deep feature mapping and the angles of feature vectors, and reducing the problem of unbalanced sample counts. However, the calculation of the loss function requires a series of approximations, leading to unstable network training.
+5. **SphereFace (A-Softmax Loss)**: Proposed in 2017, it normalizes based on L-Softmax Loss, mapping points on features to a unit hypersphere. The model's predictions depend only on the angle between \(W\) and \(X\). It proposes angular margin penalty, focusing training more on optimizing deep feature mapping and the angles of feature vectors, and reducing the problem of unbalanced sample counts. However, the calculation of the loss function requires a series of approximations, leading to unstable network training.
 6. **CosFace (AM-Softmax Loss)**: Proposed in 2018, it directly adds a cosine margin penalty to the target logistic regression, using an additive cosine margin (\(cos(θ)-m\)) and normalizing feature vectors and weights. Compared with SphereFace, it has better performance, is easier to implement, and reduces the need for joint supervision with Softmax Loss.
 7. **ArcFace**: Proposed in 2018, it introduces an additive angular margin loss (\(θ+m\)), also normalizing feature vectors and weights. It has a constant linear angular margin geometrically and directly optimizes radians. To ensure stable performance, it does not require joint supervision with other loss functions and performs excellently in face recognition tasks.
 
@@ -115,7 +111,6 @@ The loss functions for face recognition models have gone through multiple develo
 将说话人语音分割从“多标签分类”转为“幂集多分类”，能：
 1. 显著提升**重叠语音处理精度**（主要误差来源减少）；
 2. 增强**领域不匹配鲁棒性**（去掉敏感阈值θ）；
-- 开源代码：https://github.com/niuzb/wav2vec2_ssd
 - 开源模型：https://huggingface.co/niuzb/wav2vec2-ssd
 - 方法论：验证了“短块处理+幂集分类”可解决传统幂集方法的“类数爆炸”问题，为后续研究提供范式。
 
@@ -123,8 +118,7 @@ The loss functions for face recognition models have gone through multiple develo
 将一段音频流按“说话人身份”分割为时间连续的同质片段（例如：“0-5s：说话人A”“5-12s：说话人B”“12-18s：A和B重叠”）。
 
 
-### 现有方法的局限
-论文首先梳理了两类主流方法的不足，为后续创新铺垫：
+
 #### 传统多阶段方法（经典框架）
 流程：语音活动检测（VAD）->说话人嵌入（提取区分性特征）->无监督聚类（按嵌入分组）。  
 核心缺陷：
@@ -222,8 +216,8 @@ EEND的局限：
 1. **Softmax loss**：经典的分类损失函数，将正确类别的预测概率最大化，广泛应用于图像分类领域。但它只考虑能否正确分类，未考虑类间距离，在人脸识别任务中，仅具有可分离性，缺乏判别性，不能实现类内聚合 ，难以满足人脸识别对特征的要求。
 2. **Center loss**：2016年提出，在Softmax loss基础上增加了让同类样本向中心靠拢的项，为每个类设置一个中心，在保证分类的同时最小化类内距离。不过它本身没有分类功能，需配合Softmax loss使用。中心初始化是随机值，之后随学习到的特征实时更新。计算每一类的中心损失时要除以该类样本数计算均值，以防止样本失衡导致不同类别梯度更新不同步，人脸识别中参数经验值一般取0.003。其存在类内距优化效果不理想、类别多时对硬件要求高、L2范数的离群点难以优化以及只适用于同类样本间差异较小的数据等问题。
 3. **Triplet loss**：三元组损失函数，由Anchor、Negative、Positive组成。通过使Anchor和Positive尽量靠近（减小同类距离），Anchor和Negative尽量远离（增大不同类间距离）来优化模型。在Center loss之前是人脸识别的常用损失函数，但样本数增多时，样本对的组合数量会指数级激增，训练耗时严重。
-4. **L - softmax loss**：调整Softmax Loss，将卷积运算转化为向量积，把\(cosθ\)改成\(cos(mθ)\)（\(m>1\)），增加决策余量，加大学习难度，从而压缩类内距增大类间距。
-5. **SphereFace（A - Softmax loss）**：2017年提出 ，在L - softmax loss基础上将权重归一化（\(||W|| = 1\)），使特征上的点映射到单位超球面上，模型的预测仅取决于\(W\)和\(X\)之间的角度。提出角度间隔惩罚，让训练更集中在优化深度特征映射和特征向量角度上，降低样本数量不均衡问题，但损失函数计算需一系列近似，导致网络训练不稳定。
+4. **L-softmax loss**：调整Softmax Loss，将卷积运算转化为向量积，把\(cosθ\)改成\(cos(mθ)\)（\(m>1\)），增加决策余量，加大学习难度，从而压缩类内距增大类间距。
+5. **SphereFace（A - Softmax loss）**：2017年提出 ，在L-softmax loss基础上将权重归一化，使特征上的点映射到单位超球面上，模型的预测仅取决于\(W\)和\(X\)之间的角度。提出角度间隔惩罚，让训练更集中在优化深度特征映射和特征向量角度上，降低样本数量不均衡问题，但损失函数计算需一系列近似，导致网络训练不稳定。
 6. **CosFace（AM - Softmax loss）**：2018年提出，直接将cosine间隔惩罚添加到目标逻辑回归中，采用加法余弦间隔（\(cos(θ)-m\)），归一化特征向量和权重。相比SphereFace，性能更好、实现更容易，减少了对softmax loss联合监督的需求。
 7. **ArcFace**：2018年提出加性角度间隔损失（\(θ+m\)），同样归一化特征向量和权重，几何上有恒定的线性角度margin，直接优化弧度。为保证性能稳定，不需要与其他loss函数联合监督，在人脸识别任务中表现优异。 
 
