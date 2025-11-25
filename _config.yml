@@ -17,10 +17,10 @@ minimal_mistakes_skin    : "contrast" # "air", "aqua", "contrast", "dark", "dirt
 # Site Settings
 locale                   : "en-US"
 rtl                      : # true, false (default) # turns direction of the page into right to left for RTL languages
-title                    : "Niu Zhibin's Blog"
+title                    : "Jack's Blog"
 title_separator          : "|"
 subtitle                 : # site tagline that appears below site title in masthead
-name                     : "niu zhibin"
+name                     : "Jack Niu"
 description              : "A blog about data science, machine learning, and deep learning."
 url                      : "https://niuzb.github.io" # the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
 baseurl                  : # the subpath of your site, e.g. "/blog"
